@@ -8,6 +8,8 @@ import path from 'node:path'
 
 const tmp = mkdtempSync(path.join(os.tmpdir(), 'dsh-dsw-'))
 process.env.DSH_HOME = tmp
+// 真实定时器用真实时钟补日程，会绕过测试的假时间；这里关掉
+process.env.DSH_DAILY_SCHEDULE_NO_TIMER = '1'
 writeFileSync(path.join(tmp, 'AGENT.md'), '小鱼：贪吃又爱摸鱼的鲸鱼娘。', 'utf8')
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
 const S = path.join(tmp, 'image-studio')

@@ -8,6 +8,8 @@ import path from 'node:path'
 
 const tmp = mkdtempSync(path.join(os.tmpdir(), 'dsh-ds-'))
 process.env.DSH_HOME = tmp
+// 插件的真实定时器会在 15 秒后用真实时钟补日程（深夜补出「明天」），这里关掉，只用假时钟 tick()
+process.env.DSH_DAILY_SCHEDULE_NO_TIMER = '1'
 writeFileSync(path.join(tmp, 'AGENT.md'), '小鱼是一只贪吃又爱摸鱼的鲸鱼娘，职业是 AI 助手。', 'utf8')
 mkdirSync(path.join(tmp, 'image-studio'), { recursive: true })
 writeFileSync(path.join(tmp, 'image-studio', 'presets.json'), JSON.stringify({ situation: [{ name: '在家休息' }, { name: '工作学习' }] }), 'utf8')
@@ -202,7 +204,10 @@ r = await j('/day', { date: '2030-01-01', items })
 assert.equal(r.status, 404)
 r = await j('/days')
 assert.ok(r.json.days.length >= 4)
-assert.equal(r.json.days[0].date, '2026-11-02')
+// 列表按日期倒序；真实「今天」比 2026-11-02 晚时最前面是今天那份，所以别写死 days[0]
+const listed = r.json.days.map((d) => d.date)
+assert.ok(listed.includes('2026-11-02'), 'generated day listed: ' + listed.join(','))
+assert.equal(listed[0], [...listed].sort().reverse()[0], 'newest first')
 
 // ---- 说话方式：可关、可自定义（占位符）、留空用默认 ----
 {
