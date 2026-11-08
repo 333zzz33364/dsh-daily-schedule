@@ -264,5 +264,22 @@ assert.equal(listed[0], [...listed].sort().reverse()[0], 'newest first')
   assert.match(inj(S2), /此刻的生活/)
 }
 
+// ---- 人设里的名字：从「# 你是谁」段落取「你是 X。」；取不到退回设置里的名字 ----
+{
+  const { personaName } = await import('../lib/generate.js')
+  const dir = path.join(tmp, 'persona-name')
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(path.join(dir, 'a.md'), '# 你是谁\n\n你是小狐狸。你有三个身份。\n\n# 别的\n\n你是别人。\n', 'utf8')
+  const before = store.getConfig()
+  store.updateConfig({ personaFrom: 'folder', personaDir: dir })
+  const cfg = store.getConfig()
+  assert.equal(personaName(cfg), '小狐狸', '从「你是谁」那段取名字，不取后面那段')
+  const t2 = injectionText(cfg, at('2026-10-28T01:10:00Z'))
+  assert.match(t2, /# 小狐狸此刻的生活/)
+  assert.match(t2, /（小狐狸可以自己挑着用/)
+  store.updateConfig({ personaFrom: before.personaFrom, personaDir: before.personaDir })
+  assert.equal(personaName(store.getConfig()), '', '没人设或人设里没写「你是谁」时取不到')
+}
+
 srv.close()
 console.log('ALL HOST TESTS PASSED')
